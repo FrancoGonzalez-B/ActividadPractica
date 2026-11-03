@@ -2,8 +2,8 @@ import { useState, type FormEvent } from 'react'
 import './CatalogoAutos.css'
 
 interface MarcaApi {
-  Make_ID: number
-  Make_Name: string
+  MakeId: number
+  MakeName: string
 }
 
 interface ModeloApi {
@@ -60,8 +60,8 @@ export function CatalogoAutos() {
       const datosMarcas: RespuestaApi<MarcaApi> = await respuestaMarcas.json()
       const busquedaNormalizada = normalizar(texto)
       const marca = (datosMarcas.Results ?? [])
-        .filter((opcion) => busquedaNormalizada.startsWith(normalizar(opcion.Make_Name)))
-        .sort((a, b) => b.Make_Name.length - a.Make_Name.length)[0]
+        .filter((opcion) => busquedaNormalizada.startsWith(normalizar(opcion.MakeName)))
+        .sort((a, b) => b.MakeName.length - a.MakeName.length)[0]
 
       if (!marca) {
         setAutos([])
@@ -69,9 +69,9 @@ export function CatalogoAutos() {
         return
       }
 
-      const nombreModelo = texto.slice(marca.Make_Name.length).trim()
+      const nombreModelo = texto.slice(marca.MakeName.length).trim()
       const respuestaModelos = await fetch(
-        `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeId/${marca.Make_ID}?format=json`,
+        `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeId/${marca.MakeId}?format=json`,
       )
       if (!respuestaModelos.ok) {
         throw new Error('No se pudieron cargar los modelos.')
