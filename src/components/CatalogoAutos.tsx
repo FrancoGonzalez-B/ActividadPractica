@@ -1,16 +1,26 @@
 import { useEffect, useState, type ChangeEvent } from 'react'
 import './CatalogoAutos.css'
 
-interface Marca {
+interface MarcaApi {
   Make_ID: number
   Make_Name: string
 }
 
-interface Modelo {
+interface ModeloApi {
   Make_ID: number
   Make_Name: string
   Model_ID: number
   Model_Name: string
+}
+
+interface Marca {
+  id: number
+  nombre: string
+}
+
+interface Modelo {
+  id: number
+  nombre: string
 }
 
 interface RespuestaApi<T> {
@@ -37,9 +47,12 @@ export function CatalogoAutos() {
           throw new Error('No se pudieron cargar las marcas.')
         }
 
-        const datos: RespuestaApi<Marca> = await respuesta.json()
-        const lista = datos.Results ?? []
-        lista.sort((a, b) => a.Make_Name.localeCompare(b.Make_Name))
+        const datos: RespuestaApi<MarcaApi> = await respuesta.json()
+        const lista = (datos.Results ?? []).map((marca) => ({
+          id: marca.Make_ID,
+          nombre: marca.Make_Name,
+        }))
+        lista.sort((a, b) => a.nombre.localeCompare(b.nombre))
         setMarcas(lista)
       } catch {
         setErrorMarcas('No se pudieron cargar las marcas. Intenta de nuevo más tarde.')
@@ -53,7 +66,7 @@ export function CatalogoAutos() {
 
   async function elegirMarca(evento: ChangeEvent<HTMLSelectElement>) {
     const nombre = evento.target.value
-    const marca = marcas.find((opcion) => opcion.Make_Name === nombre)
+    const marca = marcas.find((opcion) => opcion.nombre === nombre)
     setMarcaElegida(nombre)
     setModelos([])
     setErrorModelos('')
@@ -66,15 +79,20 @@ export function CatalogoAutos() {
 
     try {
       const respuesta = await fetch(
-        `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeId/${marca.Make_ID}?format=json`,
+        `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeId/${marca.id}?format=json`,
       )
 
       if (!respuesta.ok) {
         throw new Error('No se pudieron cargar los modelos.')
       }
 
-      const datos: RespuestaApi<Modelo> = await respuesta.json()
-      setModelos(datos.Results ?? [])
+      const datos: RespuestaApi<ModeloApi> = await respuesta.json()
+      setModelos(
+        (datos.Results ?? []).map((modelo) => ({
+          id: modelo.Model_ID,
+          nombre: modelo.Model_Name,
+        })),
+      )
     } catch {
       setErrorModelos('No se pudieron cargar los modelos. Intenta de nuevo más tarde.')
     } finally {
@@ -100,8 +118,8 @@ export function CatalogoAutos() {
         >
           <option value="">Selecciona una marca</option>
           {marcas.map((marca) => (
-            <option key={marca.Make_ID} value={marca.Make_Name}>
-              {marca.Make_Name}
+            <option key={marca.id} value={marca.nombre}>
+              {marca.nombre}
             </option>
           ))}
         </select>
@@ -118,7 +136,7 @@ export function CatalogoAutos() {
           {!cargandoModelos && modelos.length > 0 && (
             <ul className="catalogo__lista">
               {modelos.map((modelo) => (
-                <li key={modelo.Model_ID}>{modelo.Model_Name}</li>
+                <li key={modelo.id}>{modelo.nombre}</li>
               ))}
             </ul>
           )}
