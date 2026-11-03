@@ -1,4 +1,4 @@
-import { useEffect, useState, type ChangeEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import './CatalogoAutos.css'
 
 interface MarcaApi {
@@ -7,141 +7,142 @@ interface MarcaApi {
 }
 
 interface ModeloApi {
-  Make_ID: number
   Make_Name: string
   Model_ID: number
   Model_Name: string
-}
-
-interface Marca {
-  id: number
-  nombre: string
-}
-
-interface Modelo {
-  id: number
-  nombre: string
 }
 
 interface RespuestaApi<T> {
   Results: T[]
 }
 
+interface Auto {
+  id: number
+  marca: string
+  modelo: string
+}
+
+function normalizar(texto: string) {
+  return texto.toLowerCase().replace(/[^a-z0-9]/g, '')
+}
+
 export function CatalogoAutos() {
-  const [marcas, setMarcas] = useState<Marca[]>([])
-  const [modelos, setModelos] = useState<Modelo[]>([])
-  const [marcaElegida, setMarcaElegida] = useState('')
-  const [cargandoMarcas, setCargandoMarcas] = useState(true)
-  const [cargandoModelos, setCargandoModelos] = useState(false)
-  const [errorMarcas, setErrorMarcas] = useState('')
-  const [errorModelos, setErrorModelos] = useState('')
+  const [busqueda, setBusqueda] = useState('')
+  const [autos, setAutos] = useState<Auto[]>([])
+  const [cargando, setCargando] = useState(false)
+  const [error, setError] = useState('')
+  const [consultaRealizada, setConsultaRealizada] = useState(false)
 
-  useEffect(() => {
-    async function cargarMarcas() {
-      try {
-        const respuesta = await fetch(
-          'https://vpic.nhtsa.dot.gov/api/vehicles/GetMakesForVehicleType/car?format=json',
-        )
+  async function buscarAuto(evento: FormEvent<HTMLFormElement>) {
+    evento.preventDefault()
 
-        if (!respuesta.ok) {
-          throw new Error('No se pudieron cargar las marcas.')
-        }
-
-        const datos: RespuestaApi<MarcaApi> = await respuesta.json()
-        const lista = (datos.Results ?? []).map((marca) => ({
-          id: marca.Make_ID,
-          nombre: marca.Make_Name,
-        }))
-        lista.sort((a, b) => a.nombre.localeCompare(b.nombre))
-        setMarcas(lista)
-      } catch {
-        setErrorMarcas('No se pudieron cargar las marcas. Intenta de nuevo más tarde.')
-      } finally {
-        setCargandoMarcas(false)
-      }
-    }
-
-    void cargarMarcas()
-  }, [])
-
-  async function elegirMarca(evento: ChangeEvent<HTMLSelectElement>) {
-    const nombre = evento.target.value
-    const marca = marcas.find((opcion) => opcion.nombre === nombre)
-    setMarcaElegida(nombre)
-    setModelos([])
-    setErrorModelos('')
-
-    if (!marca) {
+    const texto = busqueda.trim()
+    if (!texto) {
+      setError('Escribe la marca o el modelo del auto.')
+      setAutos([])
+      setConsultaRealizada(false)
       return
     }
 
-    setCargandoModelos(true)
+    setCargando(true)
+    setError('')
+    setAutos([])
+    setConsultaRealizada(false)
 
     try {
-      const respuesta = await fetch(
-        `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeId/${marca.id}?format=json`,
+      const respuestaMarcas = await fetch(
+        'https://vpic.nhtsa.dot.gov/api/vehicles/GetMakesForVehicleType/car?format=json',
       )
+      if (!respuestaMarcas.ok) {
+        throw new Error('No se pudieron cargar las marcas.')
+      }
 
-      if (!respuesta.ok) {
+      const datosMarcas: RespuestaApi<MarcaApi> = await respuestaMarcas.json()
+      const busquedaNormalizada = normalizar(texto)
+      const marca = (datosMarcas.Results ?? [])
+        .filter((opcion) => busquedaNormalizada.startsWith(normalizar(opcion.Make_Name)))
+        .sort((a, b) => b.Make_Name.length - a.Make_Name.length)[0]
+
+      if (!marca) {
+        setAutos([])
+        setConsultaRealizada(true)
+        return
+      }
+
+      const nombreModelo = texto.slice(marca.Make_Name.length).trim()
+      const respuestaModelos = await fetch(
+        `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeId/${marca.Make_ID}?format=json`,
+      )
+      if (!respuestaModelos.ok) {
         throw new Error('No se pudieron cargar los modelos.')
       }
 
-      const datos: RespuestaApi<ModeloApi> = await respuesta.json()
-      setModelos(
-        (datos.Results ?? []).map((modelo) => ({
+      const datosModelos: RespuestaApi<ModeloApi> = await respuestaModelos.json()
+      const modeloBuscado = normalizar(nombreModelo.replace(/\b(19|20)\d{2}\b/g, ' '))
+      const encontrados = (datosModelos.Results ?? [])
+        .filter((modelo) => !modeloBuscado || normalizar(modelo.Model_Name).includes(modeloBuscado))
+        .slice(0, 20)
+        .map((modelo) => ({
           id: modelo.Model_ID,
-          nombre: modelo.Model_Name,
-        })),
-      )
+          marca: modelo.Make_Name,
+          modelo: modelo.Model_Name,
+        }))
+
+      setAutos(encontrados)
+      setConsultaRealizada(true)
     } catch {
-      setErrorModelos('No se pudieron cargar los modelos. Intenta de nuevo más tarde.')
+      setError('No se pudo consultar la información. Intenta de nuevo más tarde.')
     } finally {
-      setCargandoModelos(false)
+      setCargando(false)
     }
   }
 
   return (
     <section className="catalogo">
-      <label className="catalogo__rotulo" htmlFor="marca">
-        Marca del auto
-      </label>
+      <div className="catalogo__introduccion">
+        <h2>Buscar auto por nombre</h2>
+        <p>Escribe la marca y, si quieres, el modelo. Por ejemplo: Toyota Corolla.</p>
+      </div>
 
-      {cargandoMarcas && <p className="catalogo__mensaje">Cargando marcas...</p>}
-      {errorMarcas && <p className="catalogo__error" role="alert">{errorMarcas}</p>}
+      <form className="catalogo__formulario" onSubmit={buscarAuto}>
+        <label className="catalogo__rotulo" htmlFor="nombre-auto">
+          Marca y modelo
+          <input
+            className="catalogo__entrada"
+            id="nombre-auto"
+            type="text"
+            value={busqueda}
+            onChange={(evento) => setBusqueda(evento.target.value)}
+            placeholder="Ej.: Toyota Corolla"
+            autoComplete="off"
+          />
+        </label>
+        <button className="catalogo__boton" type="submit" disabled={cargando}>
+          {cargando ? 'Buscando...' : 'Buscar'}
+        </button>
+      </form>
 
-      {!cargandoMarcas && !errorMarcas && (
-        <select
-          className="catalogo__selector"
-          id="marca"
-          value={marcaElegida}
-          onChange={elegirMarca}
-        >
-          <option value="">Selecciona una marca</option>
-          {marcas.map((marca) => (
-            <option key={marca.id} value={marca.nombre}>
-              {marca.nombre}
-            </option>
-          ))}
-        </select>
+      {cargando && <p className="catalogo__mensaje" role="status">Buscando autos...</p>}
+      {error && <p className="catalogo__error" role="alert">{error}</p>}
+      {consultaRealizada && !error && autos.length === 0 && (
+        <p className="catalogo__mensaje" role="status">
+          No se encontraron autos. Prueba escribiendo primero la marca, por ejemplo: Honda Civic.
+        </p>
       )}
 
-      {marcaElegida && (
+      {autos.length > 0 && (
         <div className="catalogo__modelos" aria-live="polite">
-          <h2>Modelos {marcaElegida}</h2>
-          {cargandoModelos && <p className="catalogo__mensaje">Cargando modelos...</p>}
-          {errorModelos && <p className="catalogo__error" role="alert">{errorModelos}</p>}
-          {!cargandoModelos && !errorModelos && modelos.length === 0 && (
-            <p className="catalogo__mensaje">No hay modelos para mostrar.</p>
-          )}
-          {!cargandoModelos && modelos.length > 0 && (
-            <ul className="catalogo__lista">
-              {modelos.map((modelo) => (
-                <li key={modelo.id}>{modelo.nombre}</li>
-              ))}
-            </ul>
-          )}
+          <h3>Autos encontrados</h3>
+          <ul className="catalogo__lista">
+            {autos.map((auto) => (
+              <li key={`${auto.id}-${auto.marca}-${auto.modelo}`}>
+                <strong>{auto.marca}</strong> {auto.modelo}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </section>
   )
 }
+
