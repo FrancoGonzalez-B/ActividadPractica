@@ -1,20 +1,15 @@
-# Actividad Práctica: Decodificador VIN
+# Catálogo de autos
 
-Implementé un componente para consultar información básica de un auto usando su número VIN y la API pública de NHTSA.
+Aplicación sencilla para consultar marcas, modelos e información de autos.
 
-## ¿Qué hace?
+## Iniciar la aplicación
 
-El formulario permite ingresar un VIN de 17 caracteres y, opcionalmente, el año del modelo. Antes de consultar, valida el largo del VIN y que no contenga las letras I, O ni Q. Luego envía la solicitud a NHTSA y muestra los datos que estén disponibles, como marca, modelo, año, tipo de vehículo, combustible y tracción.
+1. Ejecuta npm install.
+2. Ejecuta npm run dev.
 
-La interfaz también informa cuando la consulta está cargando, cuando ocurre un error y cuando la API no devuelve datos para el VIN ingresado.
+## Funciones
 
-## Archivos
+- Busca modelos disponibles al elegir una marca.
+- Consulta datos básicos de un auto ingresando su VIN.
 
-- `src/components/DecodificadorVIN.tsx`: formulario, validaciones, consulta a la API y presentación de resultados.
-- `src/components/DecodificadorVIN.css`: estilos propios del componente, incluyendo ajustes para pantallas pequeñas.
-
-## API utilizada
-
-La consulta se realiza al servicio DecodeVinValuesExtended de NHTSA. El formato de respuesta es JSON y el parámetro `modelyear` se agrega únicamente cuando se ingresa un año.
-
-Este componente quedó preparado como archivo independiente. Todavía no está conectado desde `App.tsx`.
+Las consultas se hacen a la API pública vPIC de NHTSA. Sus datos pueden ser limitados para autos destinados a mercados distintos de Estados Unidos.

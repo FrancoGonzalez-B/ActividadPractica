@@ -1,254 +1,152 @@
-.vin-decoder {
-  --vin-ink: #182536;
-  --vin-muted: #657386;
-  --vin-line: #dce3eb;
-  --vin-accent: #176b87;
-  --vin-accent-dark: #10536a;
-  --vin-surface: #ffffff;
-
-  width: min(100%, 860px);
-  margin: 2rem auto;
-  padding: clamp(1.25rem, 4vw, 2.5rem);
-  color: var(--vin-ink);
-  background: var(--vin-surface);
-  border: 1px solid var(--vin-line);
-  border-radius: 18px;
-  box-shadow: 0 14px 38px rgb(24 37 54 / 8%);
-  font-family: inherit;
-}
-
-.vin-decoder *,
-.vin-decoder *::before,
-.vin-decoder *::after {
-  box-sizing: border-box;
-}
-
-.vin-decoder__intro {
-  max-width: 620px;
-  margin-bottom: 1.75rem;
-}
-
-.vin-decoder__eyebrow {
-  display: inline-block;
-  margin-bottom: 0.45rem;
-  color: var(--vin-accent);
-  font-size: 0.75rem;
-  font-weight: 750;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.vin-decoder__intro h2,
-.vin-decoder__result h3 {
-  margin: 0;
-  color: var(--vin-ink);
-  line-height: 1.2;
-}
-
-.vin-decoder__intro h2 {
-  font-size: clamp(1.65rem, 4vw, 2.15rem);
-}
-
-.vin-decoder__intro p {
-  margin: 0.7rem 0 0;
-  color: var(--vin-muted);
-  line-height: 1.6;
-}
-
-.vin-decoder__form {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(150px, 0.45fr) auto;
-  align-items: end;
-  gap: 1rem;
-}
-
-.vin-decoder__field {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 0.5rem;
-  color: var(--vin-ink);
-  font-size: 0.9rem;
-  font-weight: 650;
-}
-
-.vin-decoder__field > span:not(.vin-decoder__hint) {
-  color: var(--vin-muted);
-  font-size: 0.8rem;
-  font-weight: 450;
-}
-
-.vin-decoder__field input {
-  width: 100%;
-  min-height: 48px;
-  padding: 0.75rem 0.9rem;
-  color: var(--vin-ink);
+.decodificador {
+  margin-top: 24px;
+  padding: 24px;
+  border: 1px solid #d8e0e6;
+  border-radius: 12px;
   background: #fff;
-  border: 1px solid #c7d1dd;
-  border-radius: 9px;
-  font: inherit;
-  font-weight: 450;
-  transition: border-color 140ms ease, box-shadow 140ms ease;
+  box-shadow: 0 8px 24px rgb(31 55 76 / 7%);
 }
 
-.vin-decoder__field--vin input {
-  letter-spacing: 0.045em;
+.decodificador__introduccion {
+  margin-bottom: 20px;
+}
+
+.decodificador__etiqueta {
+  margin-bottom: 6px;
+  color: #315b82;
+  font-size: 0.8rem;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
-.vin-decoder__field input::placeholder {
-  color: #9aa6b4;
-  letter-spacing: normal;
-  text-transform: none;
+.decodificador__introduccion h2,
+.decodificador__resultado h3 {
+  margin: 0;
+  color: #172b3d;
 }
 
-.vin-decoder__field input:focus {
-  border-color: var(--vin-accent);
-  outline: none;
-  box-shadow: 0 0 0 3px rgb(23 107 135 / 15%);
+.decodificador__introduccion > p:last-child {
+  margin-top: 8px;
+  color: #526271;
 }
 
-.vin-decoder__hint {
-  color: var(--vin-muted);
-  font-size: 0.75rem;
+.decodificador__formulario {
+  display: grid;
+  grid-template-columns: 1fr 180px auto;
+  align-items: end;
+  gap: 12px;
+}
+
+.decodificador__campo {
+  display: grid;
+  gap: 7px;
+  color: #243442;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.decodificador__campo span,
+.decodificador__campo > span {
+  color: #697887;
+  font-size: 0.78rem;
   font-weight: 400;
 }
 
-.vin-decoder__submit {
-  min-height: 48px;
-  padding: 0.75rem 1.15rem;
-  color: #fff;
-  background: var(--vin-accent);
-  border: 0;
-  border-radius: 9px;
-  cursor: pointer;
+.decodificador__campo input {
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 11px;
+  border: 1px solid #aab8c4;
+  border-radius: 7px;
   font: inherit;
-  font-weight: 700;
-  white-space: nowrap;
-  transition: background-color 140ms ease, transform 140ms ease;
+  font-weight: 400;
 }
 
-.vin-decoder__submit:hover:not(:disabled) {
-  background: var(--vin-accent-dark);
-  transform: translateY(-1px);
-}
-
-.vin-decoder__submit:focus-visible {
-  outline: 3px solid rgb(23 107 135 / 35%);
+.decodificador__campo input:focus-visible {
+  outline: 3px solid #94bfe2;
   outline-offset: 2px;
 }
 
-.vin-decoder__submit:disabled {
-  cursor: wait;
-  opacity: 0.7;
+.decodificador__boton {
+  min-height: 44px;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 7px;
+  color: #fff;
+  background: #315b82;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
 }
 
-.vin-decoder__notice {
-  margin: 1.25rem 0 0;
-  padding: 0.9rem 1rem;
+.decodificador__boton:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.decodificador__mensaje,
+.decodificador__error {
+  margin-top: 14px;
+  padding: 11px 13px;
+  border-radius: 7px;
+}
+
+.decodificador__mensaje {
   color: #34516a;
   background: #eff6fa;
-  border: 1px solid #d6e8f0;
-  border-radius: 9px;
-  line-height: 1.5;
 }
 
-.vin-decoder__notice--error {
+.decodificador__error {
   color: #8f2f2f;
   background: #fff3f1;
-  border-color: #f0d0ca;
 }
 
-.vin-decoder__result {
-  margin-top: 1.75rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--vin-line);
+.decodificador__resultado {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid #d8e0e6;
 }
 
-.vin-decoder__result-heading {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.2rem;
+.decodificador__resultado h3 {
+  margin-bottom: 12px;
 }
 
-.vin-decoder__result h3 {
-  font-size: clamp(1.2rem, 3vw, 1.55rem);
-}
-
-.vin-decoder__vin-badge {
-  padding: 0.45rem 0.65rem;
-  color: var(--vin-accent-dark);
-  background: #eef7fa;
-  border-radius: 6px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.75rem;
-  overflow-wrap: anywhere;
-}
-
-.vin-decoder__details {
+.decodificador__resultado dl {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0;
+  gap: 10px;
   margin: 0;
-  border-top: 1px solid var(--vin-line);
 }
 
-.vin-decoder__detail {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  padding: 0.85rem 0.75rem 0.85rem 0;
-  border-bottom: 1px solid var(--vin-line);
+.decodificador__dato {
+  padding: 10px;
+  border-radius: 7px;
+  background: #f2f5f7;
 }
 
-.vin-decoder__detail dt {
-  color: var(--vin-muted);
-  font-size: 0.78rem;
+.decodificador__dato dt {
+  color: #697887;
+  font-size: 0.8rem;
 }
 
-.vin-decoder__detail dd {
-  margin: 0;
-  color: var(--vin-ink);
-  font-size: 0.95rem;
-  font-weight: 600;
+.decodificador__dato dd {
+  margin: 4px 0 0;
+  color: #243442;
+  font-weight: 700;
 }
 
-.vin-decoder__source {
-  margin: 0.9rem 0 0;
-  color: var(--vin-muted);
-  font-size: 0.75rem;
+.decodificador__resultado > p {
+  margin-top: 12px;
+  color: #697887;
+  font-size: 0.8rem;
 }
 
-@media (max-width: 700px) {
-  .vin-decoder__form {
-    grid-template-columns: minmax(0, 1fr) minmax(130px, 0.55fr);
-  }
-
-  .vin-decoder__field--vin {
-    grid-column: 1 / -1;
-  }
-
-  .vin-decoder__submit {
-    width: 100%;
-  }
-}
-
-@media (max-width: 460px) {
-  .vin-decoder__form {
+@media (max-width: 620px) {
+  .decodificador__formulario {
     grid-template-columns: 1fr;
   }
 
-  .vin-decoder__field--vin {
-    grid-column: auto;
-  }
-
-  .vin-decoder__result-heading {
-    flex-direction: column;
-  }
-
-  .vin-decoder__details {
+  .decodificador__resultado dl {
     grid-template-columns: 1fr;
   }
 }

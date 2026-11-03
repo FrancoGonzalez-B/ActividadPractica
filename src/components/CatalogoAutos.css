@@ -1,0 +1,67 @@
+.catalogo {
+  padding: 24px;
+  border: 1px solid #d8e0e6;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgb(31 55 76 / 7%);
+}
+
+.catalogo__rotulo {
+  display: block;
+  margin-bottom: 8px;
+  color: #243442;
+  font-weight: 700;
+}
+
+.catalogo__selector {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid #aab8c4;
+  border-radius: 8px;
+  color: #243442;
+  background: #fff;
+}
+
+.catalogo__selector:focus-visible {
+  outline: 3px solid #94bfe2;
+  outline-offset: 2px;
+}
+
+.catalogo__modelos {
+  margin-top: 24px;
+}
+
+.catalogo__modelos h2 {
+  margin: 0 0 12px;
+  color: #172b3d;
+  font-size: 1.2rem;
+}
+
+.catalogo__lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.catalogo__lista li {
+  padding: 10px 12px;
+  border-radius: 7px;
+  background: #f2f5f7;
+}
+
+.catalogo__mensaje,
+.catalogo__error {
+  margin: 12px 0 0;
+}
+
+.catalogo__mensaje {
+  color: #526271;
+}
+
+.catalogo__error {
+  color: #a32929;
+}

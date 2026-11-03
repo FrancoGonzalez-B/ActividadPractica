@@ -1,0 +1,35 @@
+.pagina {
+  width: min(100% - 32px, 760px);
+  margin: 0 auto;
+  padding: 64px 0;
+}
+
+.encabezado {
+  margin-bottom: 32px;
+}
+
+.etiqueta {
+  margin-bottom: 8px;
+  color: #315b82;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.encabezado h1 {
+  margin: 0 0 8px;
+  color: #172b3d;
+  font-size: clamp(2.4rem, 7vw, 4rem);
+  line-height: 1;
+}
+
+.encabezado > p:last-child {
+  color: #526271;
+}
+
+.pie {
+  margin-top: 24px;
+  color: #697887;
+  font-size: 0.9rem;
+}

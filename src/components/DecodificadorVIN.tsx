@@ -1,221 +1,178 @@
-import { useState } from "react";
-import type { FormEvent } from "react";
-import "./DecodificadorVIN.css";
+import { useState, type FormEvent } from 'react'
+import './DecodificadorVIN.css'
 
-interface NhtsaVehicle {
-  Make: string | null;
-  Model: string | null;
-  ModelYear: string | null;
-  VehicleType: string | null;
-  BodyClass: string | null;
-  Trim: string | null;
-  EngineCylinders: string | null;
-  DisplacementL: string | null;
-  FuelTypePrimary: string | null;
-  DriveType: string | null;
-  PlantCountry: string | null;
-  ErrorText: string | null;
+interface AutoApi {
+  Make: string | null
+  Model: string | null
+  ModelYear: string | null
+  VehicleType: string | null
+  BodyClass: string | null
+  FuelTypePrimary: string | null
+  DriveType: string | null
 }
 
-interface NhtsaResponse {
-  Count: number;
-  Message: string;
-  SearchCriteria: string | null;
-  Results: NhtsaVehicle[];
+interface RespuestaApi {
+  Results: AutoApi[]
 }
 
-interface VehicleDetail {
-  label: string;
-  value: string;
+interface DatoAuto {
+  nombre: string
+  valor: string
 }
 
-const VIN_PATTERN = /^[A-HJ-NPR-Z0-9]{17}$/;
-const MODEL_YEAR_PATTERN = /^\d{4}$/;
+const patronVin = /^[A-HJ-NPR-Z0-9]{17}$/
 
-function getDetail(value: string | null): string | null {
-  if (!value || value === "0" || value.toLowerCase() === "not applicable") {
-    return null;
+function limpiarDato(dato: string | null) {
+  if (!dato || dato === '0' || dato.toLowerCase() === 'not applicable') {
+    return ''
   }
 
-  return value;
+  return dato
 }
 
-function getVehicleDetails(vehicle: NhtsaVehicle): VehicleDetail[] {
-  const fields: Array<[string, string | null]> = [
-    ["Marca", vehicle.Make],
-    ["Modelo", vehicle.Model],
-    ["Año", vehicle.ModelYear],
-    ["Tipo de vehículo", vehicle.VehicleType],
-    ["Carrocería", vehicle.BodyClass],
-    ["Versión", vehicle.Trim],
-    ["Cilindros", vehicle.EngineCylinders],
-    ["Cilindrada (L)", vehicle.DisplacementL],
-    ["Combustible", vehicle.FuelTypePrimary],
-    ["Tracción", vehicle.DriveType],
-    ["País de fabricación", vehicle.PlantCountry],
-  ];
+function obtenerDatos(auto: AutoApi): DatoAuto[] {
+  const datos = [
+    { nombre: 'Marca', valor: limpiarDato(auto.Make) },
+    { nombre: 'Modelo', valor: limpiarDato(auto.Model) },
+    { nombre: 'Año', valor: limpiarDato(auto.ModelYear) },
+    { nombre: 'Tipo de vehículo', valor: limpiarDato(auto.VehicleType) },
+    { nombre: 'Carrocería', valor: limpiarDato(auto.BodyClass) },
+    { nombre: 'Combustible', valor: limpiarDato(auto.FuelTypePrimary) },
+    { nombre: 'Tracción', valor: limpiarDato(auto.DriveType) },
+  ]
 
-  return fields.flatMap(([label, rawValue]) => {
-    const value = getDetail(rawValue);
-    return value ? [{ label, value }] : [];
-  });
+  return datos.filter((dato) => dato.valor !== '')
 }
 
 export default function DecodificadorVIN() {
-  const [vin, setVin] = useState("");
-  const [modelYear, setModelYear] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [vehicle, setVehicle] = useState<NhtsaVehicle | null>(null);
-  const [hasSearched, setHasSearched] = useState(false);
+  const [numeroVin, setNumeroVin] = useState('')
+  const [anioModelo, setAnioModelo] = useState('')
+  const [cargando, setCargando] = useState(false)
+  const [error, setError] = useState('')
+  const [auto, setAuto] = useState<AutoApi | null>(null)
+  const [consultaRealizada, setConsultaRealizada] = useState(false)
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function consultarAuto(evento: FormEvent<HTMLFormElement>) {
+    evento.preventDefault()
 
-    const normalizedVin = vin.trim().toUpperCase();
-    if (!VIN_PATTERN.test(normalizedVin)) {
-      setError("Ingresa un VIN válido de 17 caracteres. No se permiten las letras I, O ni Q.");
-      setVehicle(null);
-      setHasSearched(false);
-      return;
+    const vinNormalizado = numeroVin.trim().toUpperCase()
+    if (!patronVin.test(vinNormalizado)) {
+      setError('Ingresa un VIN de 17 caracteres. No se permiten las letras I, O ni Q.')
+      setAuto(null)
+      setConsultaRealizada(false)
+      return
     }
 
-    if (modelYear && !MODEL_YEAR_PATTERN.test(modelYear)) {
-      setError("Ingresa un año de modelo con cuatro dígitos.");
-      setVehicle(null);
-      setHasSearched(false);
-      return;
+    if (anioModelo && (!/^\d{4}$/.test(anioModelo) || Number(anioModelo) < 1981)) {
+      setError('Ingresa un año de modelo válido de cuatro dígitos.')
+      setAuto(null)
+      setConsultaRealizada(false)
+      return
     }
 
-    setLoading(true);
-    setError("");
-    setVehicle(null);
-    setHasSearched(false);
+    setCargando(true)
+    setError('')
+    setAuto(null)
+    setConsultaRealizada(false)
 
     const url = new URL(
-      `https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/${encodeURIComponent(normalizedVin)}`,
-    );
-    url.searchParams.set("format", "json");
-    if (modelYear) {
-      url.searchParams.set("modelyear", modelYear);
+      'https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/' +
+        encodeURIComponent(vinNormalizado),
+    )
+    url.searchParams.set('format', 'json')
+
+    if (anioModelo) {
+      url.searchParams.set('modelyear', anioModelo)
     }
 
     try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error("No fue posible consultar el servicio de NHTSA.");
+      const respuesta = await fetch(url)
+      if (!respuesta.ok) {
+        throw new Error('No se pudo consultar la información del auto.')
       }
 
-      const data: NhtsaResponse = await response.json();
-      const firstVehicle = data.Results?.[0];
-      const details = firstVehicle ? getVehicleDetails(firstVehicle) : [];
-
-      setVehicle(details.length > 0 ? firstVehicle : null);
-      setHasSearched(true);
-    } catch (requestError: unknown) {
-      const message =
-        requestError instanceof Error
-          ? requestError.message
-          : "Ocurrió un error al consultar el VIN. Inténtalo nuevamente.";
-      setError(message);
+      const datos: RespuestaApi = await respuesta.json()
+      const resultado = datos.Results?.[0]
+      setAuto(resultado && obtenerDatos(resultado).length > 0 ? resultado : null)
+      setConsultaRealizada(true)
+    } catch {
+      setError('Ocurrió un error al consultar el VIN. Inténtalo de nuevo.')
     } finally {
-      setLoading(false);
+      setCargando(false)
     }
   }
 
-  const details = vehicle ? getVehicleDetails(vehicle) : [];
+  const datosAuto = auto ? obtenerDatos(auto) : []
+  const tituloAuto = auto
+    ? [limpiarDato(auto.ModelYear), limpiarDato(auto.Make), limpiarDato(auto.Model)]
+        .filter(Boolean)
+        .join(' ')
+    : ''
 
   return (
-    <section className="vin-decoder" aria-labelledby="vin-decoder-title">
-      <div className="vin-decoder__intro">
-        <span className="vin-decoder__eyebrow">Identificación del vehículo</span>
-        <h2 id="vin-decoder-title">Decodificador VIN</h2>
-        <p>Consulta la información disponible de tu auto usando su número de identificación.</p>
+    <section className="decodificador" aria-labelledby="titulo-decodificador">
+      <div className="decodificador__introduccion">
+        <p className="decodificador__etiqueta">Consulta de auto</p>
+        <h2 id="titulo-decodificador">Decodificador VIN</h2>
+        <p>Ingresa el VIN para ver los datos disponibles del vehículo.</p>
       </div>
 
-      <form className="vin-decoder__form" onSubmit={handleSubmit} noValidate>
-        <label className="vin-decoder__field vin-decoder__field--vin" htmlFor="vin-input">
-          Número VIN
+      <form className="decodificador__formulario" onSubmit={consultarAuto} noValidate>
+        <label className="decodificador__campo" htmlFor="numero-vin">
+          VIN
           <input
-            id="vin-input"
-            name="vin"
+            id="numero-vin"
             type="text"
-            value={vin}
-            onChange={(event) => setVin(event.target.value.toUpperCase())}
-            placeholder="Ej.: 1HGCM82633A004352"
+            value={numeroVin}
+            onChange={(evento) => setNumeroVin(evento.target.value.toUpperCase())}
+            placeholder="17 caracteres"
             maxLength={17}
             autoComplete="off"
-            aria-describedby="vin-help"
-            required
+            aria-describedby="ayuda-vin"
           />
-          <span id="vin-help" className="vin-decoder__hint">
-            17 caracteres; no incluye I, O ni Q.
-          </span>
+          <span id="ayuda-vin">No uses las letras I, O ni Q.</span>
         </label>
 
-        <label className="vin-decoder__field vin-decoder__field--year" htmlFor="model-year-input">
+        <label className="decodificador__campo" htmlFor="anio-modelo">
           Año del modelo <span>(opcional)</span>
           <input
-            id="model-year-input"
-            name="modelyear"
+            id="anio-modelo"
             type="number"
-            value={modelYear}
-            onChange={(event) => setModelYear(event.target.value)}
+            value={anioModelo}
+            onChange={(evento) => setAnioModelo(evento.target.value)}
             placeholder="Ej.: 2022"
             min={1981}
             max={2100}
-            inputMode="numeric"
           />
         </label>
 
-        <button className="vin-decoder__submit" type="submit" disabled={loading}>
-          {loading ? "Consultando…" : "Consultar VIN"}
+        <button className="decodificador__boton" type="submit" disabled={cargando}>
+          {cargando ? 'Consultando...' : 'Consultar'}
         </button>
       </form>
 
-      {loading && (
-        <p className="vin-decoder__notice" role="status">
-          Buscando información del vehículo…
+      {cargando && <p className="decodificador__mensaje" role="status">Buscando información...</p>}
+      {error && <p className="decodificador__error" role="alert">{error}</p>}
+      {consultaRealizada && !error && !auto && (
+        <p className="decodificador__mensaje" role="status">
+          No se encontraron datos para este VIN.
         </p>
       )}
 
-      {error && (
-        <p className="vin-decoder__notice vin-decoder__notice--error" role="alert">
-          {error}
-        </p>
-      )}
-
-      {hasSearched && !error && details.length === 0 && (
-        <p className="vin-decoder__notice" role="status">
-          No se encontraron datos para este VIN. Revisa el número e inténtalo de nuevo.
-        </p>
-      )}
-
-      {vehicle && details.length > 0 && (
-        <div className="vin-decoder__result" aria-live="polite">
-          <div className="vin-decoder__result-heading">
-            <div>
-              <span className="vin-decoder__eyebrow">Resultado de la consulta</span>
-              <h3>
-                {[vehicle.ModelYear, vehicle.Make, vehicle.Model]
-                  .map((part) => getDetail(part))
-                  .filter(Boolean)
-                  .join(" ") || "Datos del vehículo"}
-              </h3>
-            </div>
-            <span className="vin-decoder__vin-badge">{vin.trim().toUpperCase()}</span>
-          </div>
-          <dl className="vin-decoder__details">
-            {details.map(({ label, value }) => (
-              <div className="vin-decoder__detail" key={label}>
-                <dt>{label}</dt>
-                <dd>{value}</dd>
+      {auto && (
+        <div className="decodificador__resultado" aria-live="polite">
+          <h3>{tituloAuto || 'Datos del vehículo'}</h3>
+          <dl>
+            {datosAuto.map((dato) => (
+              <div className="decodificador__dato" key={dato.nombre}>
+                <dt>{dato.nombre}</dt>
+                <dd>{dato.valor}</dd>
               </div>
             ))}
           </dl>
-          <p className="vin-decoder__source">Información proporcionada por NHTSA vPIC.</p>
+          <p>Información proporcionada por NHTSA vPIC.</p>
         </div>
       )}
     </section>
-  );
+  )
 }
