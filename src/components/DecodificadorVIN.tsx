@@ -63,7 +63,10 @@ export default function DecodificadorVIN() {
       return
     }
 
-    if (anioModelo && (!/^\d{4}$/.test(anioModelo) || Number(anioModelo) < 1981)) {
+    if (
+      anioModelo &&
+      (!/^\d{4}$/.test(anioModelo) || Number(anioModelo) < 1981 || Number(anioModelo) > 2100)
+    ) {
       setError('Ingresa un año de modelo válido de cuatro dígitos.')
       setAuto(null)
       setConsultaRealizada(false)
