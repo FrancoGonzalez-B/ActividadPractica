@@ -33,3 +33,28 @@
   color: #697887;
   font-size: 0.9rem;
 }
+
+.ejercicio-typescript {
+  margin-top: 32px;
+}
+
+.tarjeta-usuario {
+  padding: 20px;
+  border: 1px solid #d7e0e8;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.tarjeta-usuario__nombre {
+  color: #172b3d;
+  font-weight: 700;
+}
+
+.tarjeta-usuario__boton {
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 6px;
+  background: #315b82;
+  color: #fff;
+  cursor: pointer;
+}
