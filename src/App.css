@@ -45,12 +45,12 @@
   background: #fff;
 }
 
-.tarjeta-usuario_nombre {
+.tarjeta-usuario__nombre {
   color: #172b3d;
   font-weight: 700;
 }
 
-.tarjeta-usuario_boton {
+.tarjeta-usuario__boton {
   padding: 8px 14px;
   border: 0;
   border-radius: 6px;
