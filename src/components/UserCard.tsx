@@ -1,4 +1,5 @@
-import { useState, type FC, type MouseEvent } from 'react'
+import { useState } from 'react'
+import type * as React from 'react'
 
 export interface UserProps {
   name: string
@@ -6,10 +7,10 @@ export interface UserProps {
   isStudent: boolean
 }
 
-const UserCard: FC<UserProps> = ({ name, age, isStudent }) => {
+const UserCard: React.FC<UserProps> = ({ name, age, isStudent }) => {
   const [mensaje, setMensaje] = useState('')
 
-  function saludar(evento: MouseEvent<HTMLButtonElement>) {
+  function saludar(evento: React.MouseEvent<HTMLButtonElement>) {
     setMensaje(`Hola, ${evento.currentTarget.dataset.nombre}`)
   }
 
